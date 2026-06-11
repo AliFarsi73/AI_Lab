@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+.venv/
+
+# Secrets
+.env
+
+# ChromaDB
+db/
+
+# VS Code
+.vscode/

@@ -1,0 +1,5 @@
+To connect to Wi-Fi:
+
+1. Open network settings.
+2. Select company WLAN.
+3. Enter password.

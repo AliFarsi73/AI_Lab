@@ -1,0 +1,6 @@
+To install a printer:
+
+1. Download the driver.
+2. Open Windows Settings.
+3. Add printer.
+4. Select network printer.
