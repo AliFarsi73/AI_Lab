@@ -1,6 +1,7 @@
 from pathlib import Path
 import chromadb
 from pypdf import PdfReader
+from docx import Document
 
 client = chromadb.PersistentClient(path="../db")
 
@@ -27,12 +28,22 @@ for file in docs_path.iterdir():
         for page in reader.pages:
             content += page.extract_text() + "\n"
 
+    elif file.suffix == ".docx":
+
+        doc = Document(file)
+
+        content = ""
+
+        for paragraph in doc.paragraphs:
+            content += paragraph.text + "\n"
     else:
         continue
 
     collection.upsert(
         documents=[content],
-        ids=[file.stem]
+        ids=[file.stem],
+        metadatas=[{"source": file.name}]
+
     )
 
     print(f"Added: {file.name}")

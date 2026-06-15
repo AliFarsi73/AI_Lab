@@ -27,6 +27,7 @@ results = collection.query(
 )
 
 document = results["documents"][0][0]
+source = results["metadatas"][0][0]["source"]
 
 print("\nRelevant document found:\n")
 print(document)
@@ -35,7 +36,7 @@ print(document)
 prompt = f"""
 You are a helpful IT assistant.
 
-Answer the user's question.
+Answer the user's question in English.
 Do not copy the documentation word by word.
 Rewrite it as a clear and short answer.
 Use ONLY the information from the documentation.
@@ -56,3 +57,5 @@ response = client.models.generate_content(
 
 print("\nAnswer:\n")
 print(response.text)
+print("\nSource:")
+print(source)
