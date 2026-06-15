@@ -3,6 +3,16 @@ import chromadb
 from pypdf import PdfReader
 from docx import Document
 
+
+def split_text(text, chunk_size=800):
+    chunks = []
+
+    for i in range(0, len(text), chunk_size):
+        chunks.append(text[i:i + chunk_size])
+
+    return chunks
+
+
 client = chromadb.PersistentClient(path="../db")
 
 collection = client.get_or_create_collection(
@@ -26,7 +36,10 @@ for file in docs_path.iterdir():
         content = ""
 
         for page in reader.pages:
-            content += page.extract_text() + "\n"
+            page_text = page.extract_text()
+
+            if page_text:
+                content += page_text + "\n"
 
     elif file.suffix == ".docx":
 
@@ -36,16 +49,22 @@ for file in docs_path.iterdir():
 
         for paragraph in doc.paragraphs:
             content += paragraph.text + "\n"
+
     else:
         continue
 
-    collection.upsert(
-        documents=[content],
-        ids=[file.stem],
-        metadatas=[{"source": file.name}]
+    chunks = split_text(content)
 
-    )
+    for index, chunk in enumerate(chunks):
+        collection.upsert(
+            documents=[chunk],
+            ids=[f"{file.stem}_chunk_{index}"],
+            metadatas=[{
+                "source": file.name,
+                "chunk": index
+            }]
+        )
 
-    print(f"Added: {file.name}")
+    print(f"Added: {file.name} ({len(chunks)} chunks)")
 
 print("Done!")

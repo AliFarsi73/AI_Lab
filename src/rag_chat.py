@@ -5,57 +5,104 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 
-# Load .env
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+# -----------------------------
+# Paths
+# -----------------------------
+base_path = Path(__file__).resolve().parent.parent
 
+# Load .env
+load_dotenv(base_path / ".env")
+
+# -----------------------------
 # Gemini
+# -----------------------------
 client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
+# -----------------------------
 # ChromaDB
-db = chromadb.PersistentClient(path="../db")
-collection = db.get_collection("company_docs")
+# -----------------------------
+db_path = base_path / "db"
 
-# User question
-question = input("Ask a question: ")
-
-# Search relevant document
-results = collection.query(
-    query_texts=[question],
-    n_results=1
+db = chromadb.PersistentClient(
+    path=str(db_path)
 )
 
-document = results["documents"][0][0]
-source = results["metadatas"][0][0]["source"]
+collection = db.get_collection("company_docs")
 
-print("\nRelevant document found:\n")
-print(document)
+# -----------------------------
+# User Question
+# -----------------------------
+question = input("Ask a question: ")
 
-# Ask Gemini
+# -----------------------------
+# Search
+# -----------------------------
+results = collection.query(
+    query_texts=[question],
+    n_results=3
+)
+
+documents = results["documents"][0]
+metadatas = results["metadatas"][0]
+
+# -----------------------------
+# Show retrieved chunks
+# -----------------------------
+print("\nRelevant chunks found:\n")
+
+for i, metadata in enumerate(metadatas):
+    print(
+        f"{i+1}. "
+        f"{metadata['source']} "
+        f"(chunk {metadata['chunk']})"
+    )
+
+# -----------------------------
+# Build Context
+# -----------------------------
+context = "\n\n".join(documents)
+
 prompt = f"""
 You are a helpful IT assistant.
 
 Answer the user's question in English.
+
 Do not copy the documentation word by word.
-Rewrite it as a clear and short answer.
-Use ONLY the information from the documentation.
-If the documentation does not contain enough information, say:
-"Ich habe dazu keine ausreichenden Informationen in der Dokumentation gefunden."
+
+Rewrite the answer in a short and clear way.
+
+Use ONLY the information from the provided documentation.
+
+If the documentation does not contain enough information, answer exactly:
+
+Ich habe dazu keine ausreichenden Informationen in der Dokumentation gefunden.
 
 Question:
 {question}
 
 Documentation:
-{document}
+{context}
 """
 
+# -----------------------------
+# Gemini Answer
+# -----------------------------
 response = client.models.generate_content(
     model="gemini-2.5-flash-lite",
     contents=prompt
 )
 
+# -----------------------------
+# Output
+# -----------------------------
 print("\nAnswer:\n")
 print(response.text)
-print("\nSource:")
-print(source)
+
+print("\nSources:")
+
+for source in sorted(
+    set(metadata["source"] for metadata in metadatas)
+):
+    print("-", source)
