@@ -35,7 +35,7 @@ print(document)
 prompt = f"""
 You are a helpful IT assistant.
 
-Answer the user's question in German.
+Answer the user's question.
 Do not copy the documentation word by word.
 Rewrite it as a clear and short answer.
 Use ONLY the information from the documentation.
@@ -50,7 +50,7 @@ Documentation:
 """
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-2.5-flash-lite",
     contents=prompt
 )
 
