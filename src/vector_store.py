@@ -13,13 +13,16 @@ def split_text(text, chunk_size=800):
     return chunks
 
 
-client = chromadb.PersistentClient(path="../db")
+base_path = Path(__file__).resolve().parent.parent
+db_path = base_path / "db"
 
+client = chromadb.PersistentClient(
+    path=str(db_path)
+)
 collection = client.get_or_create_collection(
     name="company_docs"
 )
 
-base_path = Path(__file__).resolve().parent.parent
 docs_path = base_path / "data" / "documents"
 
 for file in docs_path.iterdir():

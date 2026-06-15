@@ -25,6 +25,9 @@ client = genai.Client(
 # -----------------------------
 db_path = base_path / "db"
 
+base_path = Path(__file__).resolve().parent.parent
+db_path = base_path / "db"
+
 db = chromadb.PersistentClient(
     path=str(db_path)
 )
